@@ -77,7 +77,7 @@ function App() {
 
     try {
       // Send transaction data to Kafka producer endpoint
-      const kafkaResponse = await axios.post('http://localhost:8001/send-message', {
+      const kafkaResponse = await axios.post('https://kafka-producer-k5sv.onrender.com/send-message', {
         payer_id: paymentData.payer_id,
         payee_id: paymentData.payee_id,
         amount: paymentData.amount,
