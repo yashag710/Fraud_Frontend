@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+
+const axiosInstance = axios.create({
+  timeout: 30000, // 30 seconds
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
 function App() {
   const navigate = useNavigate();
   const [paymentData, setPaymentData] = useState({
@@ -76,24 +84,25 @@ function App() {
     setError(null);
 
     try {
-      // Send transaction data to Kafka producer endpoint
-      const kafkaResponse = await axios.post('https://kafka-producer-fraud.onrender.com/send-message', {
-        payer_id: paymentData.payer_id,
-        payee_id: paymentData.payee_id,
-        amount: paymentData.amount,
-        payment_channel: paymentData.transaction_channel,
-        payment_mode: paymentData.payment_mode,
-        state: paymentData.state,
-        ip: paymentData.ip,
-        timestamp: new Date().toISOString()
+      const kafkaResponse = await axiosInstance.post('https://kafka-producer-fraud.onrender.com/send-message', {
+        topic: "transaction-requests",
+        message: {
+          payer_id: paymentData.payer_id,
+          payee_id: paymentData.payee_id,
+          amount: paymentData.amount,
+          payment_channel: paymentData.transaction_channel,
+          payment_mode: paymentData.payment_mode,
+          state: paymentData.state,
+          timestamp: new Date().toISOString()
+        },
+        ip: paymentData.ip
       });
 
-      // Navigate to result page with transaction ID
-      if (kafkaResponse.data.success) {
+      if (kafkaResponse.data.status === "✅ Message sent successfully") {
         navigate('/result', {
           state: {
             transactionDetails: {
-              transaction_id: kafkaResponse.data.transactionId,
+              transaction_id: kafkaResponse.data.transaction_id || 'pending',
               ip: paymentData.ip || 'N/A',
               country: paymentData.country || 'N/A',
               amount: Number(paymentData.amount) || 0,
@@ -102,9 +111,16 @@ function App() {
             }
           }
         });
+      } else {
+        throw new Error('Failed to send transaction');
       }
     } catch (err) {
-      setError(err.message || 'An error occurred while processing your request');
+      console.error('Transaction error:', err);
+      setError(
+        err.response?.data?.error || 
+        err.message || 
+        'Network error while processing your request'
+      );
     } finally {
       setLoading(false);
     }
