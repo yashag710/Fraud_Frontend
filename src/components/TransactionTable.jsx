@@ -31,7 +31,7 @@ const TransactionTable = () => {
         limit: pagination.limit
       });
 
-      const response = await fetch(`http://localhost:5000/api/transaction-dashboard?${queryParams}`);
+      const response = await fetch(`https://tapinsbackend-production.up.railway.app/api/transaction-dashboard?${queryParams}`);
       
       if (!response.ok) {
         const text = await response.text();

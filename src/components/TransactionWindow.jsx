@@ -81,7 +81,7 @@ function TransactionWindow() {
     setError(null);
 
     try {
-      const res = await axiosInstance.post('http://localhost:5000/api/transaction', {
+      const res = await axiosInstance.post('https://tapinsbackend-production.up.railway.app/api/transaction', {
         payer_id: paymentData.payer_id,
         payee_id: paymentData.payee_id,
         amount: paymentData.amount,
