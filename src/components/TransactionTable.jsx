@@ -31,7 +31,7 @@ const TransactionTable = () => {
         limit: pagination.limit
       });
 
-      const response = await fetch(`http://localhost:5000/api/transactions?${queryParams}`);
+      const response = await fetch(`http://localhost:5000/api/transaction-dashboard?${queryParams}`);
       
       if (!response.ok) {
         const text = await response.text();
@@ -98,44 +98,66 @@ const TransactionTable = () => {
         </p>
 
         {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date Range
-            </label>
-            <div className="flex space-x-2">
+        <div className="w-full mb-6">
+          <form
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            onSubmit={e => { e.preventDefault(); handleApplyFilters(); }}
+          >
+            {/* Date From */}
+            <div className="flex flex-col">
+              <label htmlFor="dateFrom" className="text-sm font-medium text-gray-700 mb-1">
+                Date From
+              </label>
               <input
                 type="date"
                 id="dateFrom"
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className="rounded-md border px-3 py-2 text-sm"
+                value={filters.dateFrom}
                 onChange={handleChange}
               />
+            </div>
+            {/* Date To */}
+            <div className="flex flex-col">
+              <label htmlFor="dateTo" className="text-sm font-medium text-gray-700 mb-1">
+                Date To
+              </label>
               <input
                 type="date"
                 id="dateTo"
-                className="w-full rounded-md border px-3 py-2 text-sm"
+                className="rounded-md border px-3 py-2 text-sm"
+                value={filters.dateTo}
                 onChange={handleChange}
               />
             </div>
-          </div>
-
-          {["PayerId", "PayeeId", "TransactionId"].map((filter) => (
-            <div key={filter}>
-              <label
-                htmlFor={filter}
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                {filter.replace(/([A-Z])/g, " $1")}
+            {/* Payer ID */}
+            <div className="flex flex-col">
+              <label htmlFor="payerId" className="text-sm font-medium text-gray-700 mb-1">
+                Payer ID
               </label>
               <input
                 type="text"
-                id={filter}
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                placeholder={`Enter ${filter}`}
+                id="payerId"
+                className="rounded-md border px-3 py-2 text-sm"
+                placeholder="Enter Payer ID"
+                value={filters.payerId}
                 onChange={handleChange}
               />
             </div>
-          ))}
+            {/* Transaction ID */}
+            <div className="flex flex-col">
+              <label htmlFor="transactionId" className="text-sm font-medium text-gray-700 mb-1">
+                Transaction ID
+              </label>
+              <input
+                type="text"
+                id="transactionId"
+                className="rounded-md border px-3 py-2 text-sm"
+                placeholder="Enter Transaction ID"
+                value={filters.transactionId}
+                onChange={handleChange}
+              />
+            </div>
+          </form>
         </div>
 
         {/* Buttons */}

@@ -1,24 +1,22 @@
-import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const TransactionResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Add null check and provide complete default values
-  const transactionDetails = location.state?.transactionDetails || {
-    transaction_id: 'N/A',
-    ip: 'N/A',
-    country: 'N/A',
-    amount: 0,
-    failed_attempts: 0,
-    is_fraud: false,
-    dateTime: new Date().toLocaleString(),
-    status: 'Unknown'
-  };
+  const queryParams = new URLSearchParams(location.search);
 
-  // Add error state handling
-  if (!location.state) {
+  // Retrieve query params
+  const transaction_id = queryParams.get("transaction_id");
+  const is_fraud = queryParams.get("is_fraud") === "true";
+  const status = queryParams.get("status") || "Completed";
+  const amount = parseFloat(queryParams.get("amount") || "0");
+  const failed_attempts = queryParams.get("failed_attempts") || 0;
+  const ip = queryParams.get("ip") || "N/A";
+  let state = queryParams.get("state") || "Unknown";
+  const dateTime = new Date().toLocaleString();
+
+  // Handle if required data is missing
+  if (!transaction_id) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
         <div className="text-center">
@@ -42,40 +40,28 @@ const TransactionResult = () => {
     );
   }
 
-  const { transaction_id, ip, country, amount, failed_attempts, is_fraud, dateTime, status } = transactionDetails;
-
-  console.log(is_fraud);
-  // Determine status styles
+  // Determine styling based on fraud and status
   const getStatusStyles = (status, isFraud) => {
     if (isFraud) {
       return { textColor: 'text-red-700', bgColor: 'bg-red-600' };
     }
-    switch(status) {
-      case 'Processed':
+    switch (status.toLowerCase()) {
+      case 'processed':
         return { textColor: 'text-green-700', bgColor: 'bg-green-600' };
-      case 'Pending':
+      case 'pending':
         return { textColor: 'text-yellow-700', bgColor: 'bg-yellow-600' };
-      case 'Failed':
+      case 'failed':
         return { textColor: 'text-red-700', bgColor: 'bg-red-600' };
       default:
         return { textColor: 'text-green-700', bgColor: 'bg-green-600' };
     }
   };
- 
-  const statusStyles = getStatusStyles(status, is_fraud);
- 
-  // Format currency
-  const formatCurrency = (amount) => {
-    return `$${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-  };
 
-  const handleBack = () => {
-    navigate('/');
-  };
+  const statusStyles = getStatusStyles(status, is_fraud);
 
   return (
     <div id="root">
-      <section id="confirmation-section" className={`bg-white py-12 px-4 sm:px-6 lg:px-8 ${is_fraud ? 'bg-red-50' : ''}`}>
+      <section className={`bg-white py-12 px-4 sm:px-6 lg:px-8 ${is_fraud ? 'bg-red-50' : ''}`}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <div className={`inline-flex items-center justify-center h-20 w-20 rounded-full ${is_fraud ? 'bg-red-100' : 'bg-green-100'} mb-6`}>
@@ -98,16 +84,15 @@ const TransactionResult = () => {
           </div>
 
           <div className={`bg-white rounded-xl shadow-lg border ${is_fraud ? 'border-red-200' : 'border-gray-200'} overflow-hidden`}>
-            {/* Transaction Summary */}
             <div className={`${is_fraud ? 'bg-red-50' : 'bg-gray-50'} p-6 border-b border-gray-200`}>
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Transaction Details</h2>
               <div className="grid grid-cols-2 gap-y-4 text-sm">
                 <div className="text-gray-600">Transaction ID:</div>
                 <div className="text-gray-900 font-medium">{transaction_id}</div>
-               
+
                 <div className="text-gray-600">Date & Time:</div>
                 <div className="text-gray-900 font-medium">{dateTime}</div>
-               
+
                 <div className="text-gray-600">Status:</div>
                 <div className={`${statusStyles.textColor} font-medium flex items-center`}>
                   <span className={`inline-block w-2 h-2 rounded-full ${statusStyles.bgColor} mr-2`}></span>
@@ -116,15 +101,14 @@ const TransactionResult = () => {
               </div>
             </div>
 
-            {/* Payment Summary */}
             <div className="p-6 sm:p-8">
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">Transaction Information</h2>
                 <div className={`${is_fraud ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'} p-4 rounded-md border`}>
                   <div className="text-sm text-gray-900 space-y-2">
                     <p><span className="text-gray-600">IP Address:</span> {ip}</p>
-                    <p><span className="text-gray-600">Country:</span> {country}</p>
-                    <p><span className="text-gray-600">Amount:</span> {formatCurrency(amount)}</p>
+                    <p><span className="text-gray-600">State:</span> {state}</p>
+                    <p><span className="text-gray-600">Amount:</span> ₹{amount}</p>
                     <p><span className="text-gray-600">Failed Attempts:</span> {failed_attempts}</p>
                   </div>
                 </div>
@@ -141,17 +125,16 @@ const TransactionResult = () => {
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">Security Alert</h3>
                       <div className="mt-2 text-sm text-red-700">
-                        <p>This transaction has been flagged as fraudulent and has been reported to SEBI (Securities and Exchange Board of India) for further investigation. Your account may be temporarily restricted for security purposes.</p>
+                        <p>This transaction has been flagged as fraudulent and has been reported to SEBI (Securities and Exchange Board of India) for further investigation.</p>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Back Button */}
               <div className="mt-8 flex justify-center">
                 <button
-                  onClick={handleBack}
+                  onClick={() => navigate('/')}
                   className={`${is_fraud ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">

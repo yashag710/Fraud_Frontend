@@ -4,14 +4,19 @@ import "./App.css";
 import TransactionWindow from "./components/TransactionWindow";
 import TransactionTable from "./components/TransactionTable";
 import TransactionResult from "./components/TransactionResult";
+import PhoneVerification from "./components/PhoneVerification";
+import Home from "./components/Home";
+
 function App(){
   return(
     <Router>
       <Routes>
       <Route>
-      <Route path="/" element={<TransactionWindow />} />
-      <Route path="/dash" element={<TransactionTable/>}/>
-      <Route path="/result" element={<TransactionResult />} />
+      <Route path="/phone-verification" element={<PhoneVerification />} />
+      <Route path="/transaction" element={<TransactionWindow />} />
+      <Route path="/transaction-dashboard" element={<TransactionTable/>}/>
+      <Route path="/transaction-result" element={<TransactionResult />} />
+      <Route path="/" element={<Home />} />
       </Route>
       </Routes>
     </Router>
